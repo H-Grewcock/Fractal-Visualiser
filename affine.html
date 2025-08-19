@@ -1,0 +1,300 @@
+<!-- affine.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Affine Fractal Visualiser</title>
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <style>
+        #nav-container, #footer-container {
+            width: 100%;
+        }
+
+        /* Main container with canvas and side panel */
+        #mainContent {
+            display: flex;
+            height: calc(100vh - 120px);    /* adjusted for nav & footer approx. height */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Side panel on the right */
+        #sidePanel {
+            width: 320px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* Canvas container takes the remaining space */
+        #canvasContainer {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;      /* white background */
+        }
+
+        #affineCanvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        #zoom-indicator, #mouse-coords {
+            position: fixed;
+            right: 10px;
+            color: #333;
+            font-family: monospace;
+            background: rgba(255 255 255 / 0.8);
+            padding: 3px 6px;
+            border-radius: 4px;
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        #zoom-indicator {
+            bottom: 10px;
+        }
+
+        #mouse-coords {
+            bottom: 30px;
+        }
+
+        /* Controls styling */
+        #sidePanel label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #sidePanel input[type="number"], #sidePanel select {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        #sidePanel button {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            background: #4e6350;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidePanel button:hover:not(:disabled) {
+            background: #3d4e3d;
+        }
+
+        fieldset {
+            margin-top: 15px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        fieldset legend {
+            font-weight: 700;
+            padding: 0 6px;
+        }
+
+        /* Matrix A editor rows (built by JS) */
+        #matrixAInputsContainer > div {
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(80px, 1fr));
+            gap: 6px;
+        }
+
+        /* Vector b editor rows (built by JS) */
+        #vectorBInputsContainer > div {
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(80px, 1fr));
+            gap: 6px;
+        }
+
+        /* Inputs created by JS inside labels */
+        #matrixAInputsContainer label,
+        #vectorBInputsContainer label,
+        #probabilitiesContainer label {
+            font-weight: normal;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        #matrixAInputsContainer input[type="number"],
+        #vectorBInputsContainer input[type="number"],
+        #probabilitiesContainer input[type="number"] {
+            padding: 6px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        /* Probabilities panel (sum + small inline buttons live inside) */
+        #probabilitiesContainer > div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+        }
+
+        /* Keep inline buttons compact (not full width) */
+        #probabilitiesContainer button {
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #probabilitiesContainer button:hover { background: #f0f0f0; }
+
+        #tips {
+            font-size: 12px;
+            color: #444;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <div id="mainContent">
+        <div id="canvasContainer">
+            <canvas id="affineCanvas" width="600" height="600" aria-label="Affine fractal visualisation"></canvas>
+            <div id="zoom-indicator" aria-live="polite" aria-atomic="true">Zoom: 1.00x</div>
+            <div id="mouse-coords" aria-live="polite" aria-atomic="true">X: 0.00, Y: 0.00</div>
+        </div>
+
+        <aside id="sidePanel" role="region" aria-label="Affine Fractal Controls">
+            <h2>Affine Fractal Controls</h2>
+            
+            <label for="exampleSelector">Examples:</label>
+            <select id="exampleSelector" name="exampleSelector">
+                <option value="">-- Select Example --</option>
+                <option value="Barnsley Fern">Barnsley Fern</option>
+                <option value="Spiral">Spiral</option>
+                <option value="Shrinking Square">Shrinking Square</option>
+                <option value="Sierpinski Triangle">Sierpinski Triangle</option>
+                <option value="Sierpinski Square">Sierpinski Square</option>
+                <option value="Pentagon Star">Pentagon Star</option>
+            </select>
+
+            <label for="mapCount">Number of Maps:</label>
+            <input type="number" id="mapCount" name="mapCount" value="3" min="1" max="10" />
+
+            <fieldset>
+                <legend>Affine Transformations (Ax + b)</legend>
+                
+                <!-- Container for each affine map's matrix A inputs -->
+                <div id="matrixAInputsContainer" aria-label="Matrix A inputs for each affine map">
+                    <!-- JS will dynamically add 2x2 input grids for each map's matrix A here -->
+                </div>
+
+                <!-- Container for each affine map's vector b inputs -->
+                <div id="vectorBInputsContainer" aria-label="Vector b inputs for each affine map">
+                    <!-- JS will dynamically add 2 input fields for each map's vector b here -->
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Probabilities</legend>
+                <div id="probabilitiesContainer" aria-label="Probability per map">
+                    <!-- JS injects inputs for each map's probability and shows running sum -->
+                </div>
+            </fieldset>
+
+            <label for="numPoints">Points to Plot:</label>
+            <input type="number" id="numPoints" name="numPoints" value="10000" min="100" step="100" />
+
+            <button id="generateAffine">Generate</button>
+            <button id="stepOnce">Step Once</button>
+            <button id="toggleAnimation">Play/Pause Animation</button>
+            <button id="resetAffine">Reset</button>
+            <button id="clearCanvas">Clear Canvas</button>
+            <button id="drawGrid">Draw Grid</button>
+            <button id="exportAffine">Export Image</button>
+            <button id="recordVideo">Start Recording</button>
+        </aside>
+    </div>
+
+    <!-- Footer placeholder-->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'components/nav.html');
+        loadComponent('footer-container', 'components/footer.html');
+    </script>
+
+    <script src="js/affine.js"></script>
+</body>
+
+</html>

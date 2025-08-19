@@ -1,0 +1,258 @@
+<!-- planeIts.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plane Iteration Visualiser</title>
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <style>
+        #nav-container,
+        #footer-container {
+            width: 100%;
+        }
+
+        /* Main container with flex -- canvas left, side panel right */
+        #mainContent {
+            display: flex;
+            height: calc(100vh - 120px);    /* adjusted for nav & footer approx.height */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Side panel */
+        #sidePanel {
+            width: 320px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+
+        /* Canvas container */
+        #canvasContainer {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        #planeCanvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        /* Overlay indicators */
+        #zoom-indicator,
+        #mouse-coords {
+            position: fixed;
+            right: 10px;
+            color: #333;
+            font-family: monospace;
+            background: rgba(255 255 255 / 0.8);
+            padding: 3px 6px;
+            border-radius: 4px;
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        #zoom-indicator {
+            bottom: 10px;
+        }
+
+        #mouse-coords {
+            bottom: 30px;
+        }
+
+        /* Controls styling */
+        #sidePanel label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #sidePanel input[type="number"],
+        #sidePanel input[type="text"],
+        #sidePanel select {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        #sidePanel button {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            background: #4e6350;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidePanel button:hover:not(:disabled) {
+            background: #3d4e3d;
+        }
+
+        .buttons {
+            margin-top: 15px;
+            display: grid;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <div id="mainContent">
+        <div id="canvasContainer">
+            <canvas id="planeCanvas" width="800" height="600" aria-label="Plane iteration output"></canvas>
+            <div id="zoom-indicator">Zoom: 1.00x</div>
+            <div id="mouse-coords">(0.00, 0.00)</div>
+        </div>
+
+        <aside id="sidePanel" role="region" aria-label="Plane Iteration Controls">
+            <h2>Plane Iteration Controls</h2>
+
+            <label for="fx">Function f(x, y):</label>
+            <input type="text" id="fx" value="x + y" />
+
+            <label for="gy">Function g(x, y):</label>
+            <input type="text" id="gy" value="x - y" />
+
+            <label for="xRange">xRange (min, max):</label>
+            <input type="text" id="xRange" value="-3, 3" />
+
+            <label for="yRange">yRange (min, max):</label>
+            <input type="text" id="yRange" value="-3, 3" />
+
+            <label for="gridSpacing">Grid Spacing:</label>
+            <input type="number" id="gridSpacing" value="10" min="1" max="100" />
+
+            <label for="iterations">Iterations:</label>
+            <input type="number" id="iterations" value="20" min="1" max="1000" />
+
+            <label for="dotSize">Dot Size:</label>
+            <input type="number" id="dotSize" value="1" min="1" max="10" />
+
+            <label for="exampleSelect">Examples:</label>
+            <select id="exampleSelect">
+                <option value="" selected disabled>Select an example</option>
+                <option value="0">Linear Spiral</option>
+                <option value="1">Quadratic Map</option>
+                <option value="2">Sine Swap</option>
+                <option value="3">Henon-ish</option>
+            </select>
+
+            <!-- Lines toggle -->
+            <label for="linesCheckbox" style="display:flex;align-items:center;gap:.5rem;margin-top:15px;">
+            <input type="checkbox" id="linesCheckbox" />
+                Show lines (shortcut: “L”)
+            </label>
+
+            <div class="buttons">
+                <button id="resetButton">Draw</button>
+                <button id="clearButton">Clear</button>
+                <button id="exportButton">Export Image</button>
+                <button id="playPauseButton">Play / Pause</button>
+                <button id="recordButton">Start Recording</button>
+                <button id="stopRecordButton">Stop Recording</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'components/nav.html');
+        loadComponent('footer-container', 'components/footer.html');
+    </script>
+
+    <script src="js/planeIts.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const controls = {
+                fx: document.getElementById("fx"),
+                gy: document.getElementById("gy"),
+                xRange: document.getElementById("xRange"),
+                yRange: document.getElementById("yRange"),
+                gridSpacing: document.getElementById("gridSpacing"),
+                iterations: document.getElementById("iterations"),
+                dotSize: document.getElementById("dotSize"),
+                linesCheckbox: document.getElementById("linesCheckbox"),
+                resetButton: document.getElementById("resetButton"),
+                clearButton: document.getElementById("clearButton"),
+                exportButton: document.getElementById("exportButton"),
+                playPauseButton: document.getElementById("playPauseButton"),
+                recordButton: document.getElementById("recordButton"),
+                stopRecordButton: document.getElementById("stopRecordButton")
+            };
+            initPlaneVisualiser(controls);
+        });
+    </script>
+</body>
+
+</html>

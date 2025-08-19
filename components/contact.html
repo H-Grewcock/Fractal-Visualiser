@@ -1,0 +1,103 @@
+<!-- components/contact.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <main class="hero" style="margin-top: 70px;">
+        <h1>Get in Touch</h1>
+        <p>Have questions, thoughts, or suggestions? Feel free to send a message.</p>
+
+        <section class="control-panel" aria-label="Contact form">
+            <form id="contact-form" action="#" method="POST" novalidate>
+                <div class="control-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Your full name" required autocomplete="name" />
+                </div>
+
+                <div class="control-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required autocomplete="email" />
+                </div>
+
+                <div class="control-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" name="subject" placeholder="Subject of your message" required />
+                </div>
+
+                <div class="control-group">
+                    <label for="message">Message:</label>
+                    <textarea id="message" name="message" rows="6" placeholder="Write your message here..." required></textarea>
+                </div>
+
+                <div class="control-buttons">
+                    <button type="submit">Send</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'nav.html');
+        loadComponent('footer-container', 'footer.html');
+    </script>
+
+    <script src="../js/main.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fractal Visualiser</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+    <!-- Navbar placeholder-->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <main class="hero" role="main" tabindex="-1">
+        <h1>Fractal Visualiser</h1>
+        <a href="mandelbrot.html" class="button-link" role="button" aria-label="Start exploring fractals">
+            Start Exploring
+        </a>
+        <br>
+        <br>
+
+        <section class="grid-container" aria-label="Fractal sections">
+            <a href="3DFractals.html" class="grid-item" role="link" tabindex="0">3D Fractals</a>
+            <a href="affine.html" class="grid-item" role="link" tabindex="0">Affine Fractals</a>
+            <a href="dendrites.html" class="grid-item" role="link" tabindex="0">Dendrites</a>
+
+            <a href="fractalCurves.html" class="grid-item" role="link" tabindex="0">Fractal Curves</a>
+            <a href="julia.html" class="grid-item" role="link" tabindex="0">Julia Set</a>
+            <a href="lSystem.html" class="grid-item" role="link" tabindex="0">L-Systems</a>
+            
+            <a href="mandelbrot.html" class="grid-item" role="link" tabindex="0">Mandelbrot Set</a>
+            <a href="mandelJuliaConnection.html" class="grid-item" role="link" tabindex="0">Mandelbrot-Julia Connection</a>
+            <a href="planeIts.html" class="grid-item" role="link" tabindex="0">Plane Iterations</a>
+
+            <a href="polyIFS.html" class="grid-item" role="link" tabindex="0">Polyhedra IFS</a>
+            <a href="spaceFill.html" class="grid-item" role="link" tabindex="0">Space Filling Curves</a>
+        </section>
+    </main>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'components/nav.html');
+        loadComponent('footer-container', 'components/footer.html');
+    </script>
+
+    <script src="../js/main.js" defer></script>
+</body>
+
+</html>

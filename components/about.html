@@ -1,0 +1,95 @@
+<!-- components/about.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About - Fractal Visualiser</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main section -->
+    <main class="hero" role="main" tabindex="-1" style="margin-top: 5rem;">
+        <h1 class="main-heading">About This Project</h1>
+
+        <section class="panel">
+            <h2>Purpose</h2>
+            <p>
+                <!-- Content to be added -->
+            </p>
+        </section>
+
+        <section class="panel">
+        <h2>Features</h2>
+        <ul>
+            <li><!-- Content to be added --></li>
+        </ul>
+        </section>
+
+        <section class="panel">
+            <h2>Contact & Feedback</h2>
+            <p>
+                <!-- Content to be added -->
+            </p>
+        </section>
+    </main>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'nav.html');
+        loadComponent('footer-container', 'footer.html');
+    </script>
+
+    <script src="../js/main.js" defer></script>
+</body>
+
+</html>

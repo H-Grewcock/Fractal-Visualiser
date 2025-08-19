@@ -1,0 +1,213 @@
+<!-- lSystem.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L-System Fractal Visualiser</title>
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <style>
+        #nav-container,
+        #footer-container {
+            width: 100%;
+        }
+
+        /* Main content with flex -- canvas left, side panel right */
+        #mainContent {
+            display: flex;
+            height: calc(100vh - 120px);    /* adjusted for nav & footer approx. height */
+            box-sizing: border-box;
+            overflow: hidden;
+            font-family: system-ui, sans-serif;
+        }
+
+        /* Side panel (RHS) */
+        #sidePanel {
+            width: 320px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* Canvas container takes the remaining space */
+        #canvasContainer {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        #lSystemCanvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        #zoom-indicator,
+        #mouse-coords {
+            position: fixed;
+            right: 10px;
+            color: #333;
+            font-family: monospace;
+            background: rgba(255 255 255 / 0.8);
+            padding: 3px 6px;
+            border-radius: 4px;
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        #zoom-indicator {
+            bottom: 10px;
+        }
+
+        #mouse-coords {
+            bottom: 30px;
+        }
+
+        /* Controls styling */
+        #sidePanel label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #sidePanel input[type="number"],
+        #sidePanel select,
+        #sidePanel button {
+            width: 100%;
+            padding: 7px 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        #sidePanel button {
+            margin-top: 12px;
+            background: #4e6350;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidePanel button:hover:not(:disabled) {
+            background: #3d4e3d;
+        }
+
+        .buttons {
+            margin-top: 15px;
+            display: grid;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <div id="mainContent">
+        <div id="canvasContainer">
+            <canvas id="lSystemCanvas" width="600" height="600" aria-label="L-System output"></canvas>
+            <div id="zoom-indicator" aria-live="polite" aria-atomic="true">Zoom: 1.00x</div>
+            <div id="mouse-coords" aria-live="polite" aria-atomic="true">(0, 0)</div>
+        </div>
+
+        <aside id="sidePanel" role="region" aria-label="L-System Controls">
+            <h2>L-System Controls</h2>
+
+            <label for="lSystemExampleSelector">Examples:</label>
+            <select id="lSystemExampleSelector" name="lSystemExampleSelector">
+                <option value="">-- Select Example --</option>
+                <option value="koch">Koch Curve</option>
+                <option value="dragon">Dragon Curve</option>
+                <option value="plant">Plant</option>
+                <option value="sierpinski">Sierpinski Triangle</option>
+                <option value="triangle">Triangle</option>
+            </select>
+
+            <label for="lSystemIterations">Iterations:</label>
+            <input type="number" id="lSystemIterations" name="lSystemIterations" value="4" min="0" max="10" />
+
+            <label for="lineWidthInput">Line Width:</label>
+            <input type="number" id="lineWidthInput" name="lineWidthInput" value="1" min="0.5" max="10" step="0.5" />
+
+            <div class="buttons">
+                <button id="generateLSystem">Generate</button>
+                <button id="resetLSystem">Reset</button>
+                <button id="clearLSystem">Clear</button>
+                <button id="exportLSystem">Export Image</button>
+                <button id="togglePlayPause">Pause</button>
+                <button id="recordVideo">Record Video</button>
+                <button id="toggleGrid">Toggle Grid</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'components/nav.html');
+        loadComponent('footer-container', 'components/footer.html');
+    </script>
+
+    <script src="js/lSystem.js"></script> 
+</body>
+
+</html>

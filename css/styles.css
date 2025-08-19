@@ -1,0 +1,374 @@
+/* css/styles.css */
+
+/* === BASE & RESET === */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8f9;
+    color: #2b2b2b;
+    line-height: 1.6;
+    height: 100vh;
+    padding-top: 60px;
+}
+
+/* NAVBAR */
+.nav-container {
+    background-color: #4e6350;  /* same as footer */
+    padding: 0.6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+
+    width: 100%;
+    box-sizing: border-box;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.navbar-links a {
+    color: #dcdcdc;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navbar-links a:hover,
+.navbar-links a:focus,
+.navbar-links a[aria-current="page"] {
+    background-color: #6d8570;
+    color: #ffffff;
+}
+
+/* FOOTER */
+footer.main-footer {
+    background-color: #4e6350;
+    color: #dcdcdc;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    border-top: 1px solid #a3b0a3;
+}
+
+#footer-container {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    background-color: #f0f0f0;
+}
+
+/* === CANVAS === */
+canvas {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.06);
+    display: block;
+    margin: 1rem auto;
+    max-width: 100%;
+}
+
+/* === FORMATTING === */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 1rem; }
+.p-4 { padding: 1.5rem; }
+
+/* === BUTTONS === */
+button {
+    background-color: #4e6350;
+    color: #ffffff;
+    border: 1px solid #3c4e3d;
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+button:hover,
+button:focus {
+    background-color: #637b65;
+    border-color: #4e6350;
+}
+
+.start-exploring {
+    display: inline-block;
+    padding: 1rem 2rem;
+    margin-bottom: 3rem;
+    font-size: 1.25rem;
+    background-color: #4e6350;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.start-xploring:hover
+.start-exploring:focus {
+    background-color: #637b65;
+    border-color: #4e6350
+}
+
+/* === GRID-CONTAINER === */
+/* For index.html -- may not be necessary when redesigning */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.grid-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #d0d0d0;
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    font-weight: 600;
+    color: #333;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    user-select: none;
+}
+
+.grid-item:hover,
+.grid-item:focus {
+    background-color: #c5def5;
+}
+
+/* === FORMS === */
+/* For the contact form in components/contact.html */
+input, select, textarea {
+    padding: 0.45rem;
+    border: 1px solid #b5b5b5;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: #2b2b2b;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4e6350;
+    box-shadow: 0 0 4px rgba(78, 99, 80, 0.4);
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f7f8f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #4e6350;
+    border-radius: 10px;
+}
+
+/* UTILITY */
+.text-center {
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* HERO SECTION */
+.hero {
+    flex-grow: 1;
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.main-heading {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.15em;
+}
+
+main.hero {
+    padding: 2.5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin: 2rem auto;
+    max-width: 720px;
+    text-align: center;
+}
+
+main.hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+    color: #4e6350;
+    font-weight: 700;
+}
+
+main.hero p {
+    max-width: 640px;
+    margin: 0.5rem auto 2rem;
+    font-size: 1.05rem;
+    color: #444;
+}
+
+/* === BUTTON LINKS === */
+.button-link {
+    text-decoration: none;
+    background-color: #4e6350;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    border: 1px solid #3d4e3d;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.button-link:hover,
+.button-link:focus-visible {
+    background-color: #637b65;
+    transform: translateY(-1px);
+}
+
+/* === PANEL SECTIONS === */
+.panel {
+    background-color: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.panel h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #4e6350;
+    border-bottom: 1px solid #cccccc;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.code-block {
+    font-family: Consolas, 'Courier New', monospace;
+    background-color: #f1f3f2;
+    padding: 0.6rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* === CONTROL PANEL === */
+.control-panel {
+    background-color: #ffffff;
+    border: 1px solid #c9cfc9;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem auto 1.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    max-width: 900px;
+}
+
+.control-panel h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #4e6350;
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #d0d0d0;
+    padding-bottom: 0.4rem;
+}
+
+.control-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.control-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    min-width: 120px;
+}
+
+.control-group input[type="number"],
+.control-group input[type="text"],
+.control-group select {
+    flex: 1;
+    min-width: 60px;
+}
+
+.control-group input[type="range"] {
+    flex: 2;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.control-buttons button {
+    flex: none;
+}
+
+.sub-panel {
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+    padding: 0.6rem;
+    background-color: #fafbfa;
+}
+.sub-panel h4 {
+    font-size: 0.95rem;
+    color: #4e6350;
+    margin: 0 0 0.5rem;
+    }
