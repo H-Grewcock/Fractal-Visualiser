@@ -101,7 +101,7 @@ function clearCanvas(keepAnchors = true) {
 }
 
 function drawGrid() {
-    ctx.strokeStyle = '#333';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 1;
     const step = 0.5;
 
@@ -606,4 +606,5 @@ canvas.height = canvas.clientHeight;
 selectExample("Sierpinski Triangle"); // default
 ensureMapsLength(affineMaps.length || 3);
 renderAllEditors();
+
 updateFractal();
