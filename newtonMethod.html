@@ -1,0 +1,265 @@
+<!-- newtonMethod.html -->
+ 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=content-width, initial-scale=1.0" />
+    <title>Mandelbrot Set</title>
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <style>
+        #nav-container,
+        #footer-container {
+            width: 100%;
+        }
+
+        /* Main container with canvas and side panel */
+        #mainContent {
+            display: flex;
+            height: calc(100vh - 120px);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Canvas container */
+        #canvasContainer {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+        }
+
+        #newtonCanvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        /* Side panel */
+        #sidePanel {
+            width: 320px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* Overlay indicators */
+        #zoom-indicator,
+        #mouse-coords {
+            position: fixed;
+            right: 10px;
+            color: #333;
+            font-family: monospace;
+            background: rgba(255 255 255 / 0.8);
+            padding: 3px 6px;
+            border-radius: 4px;
+            user-select: none;
+            pointer-events: none;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        #zoom-indicator {
+            bottom: 10px;
+        }
+
+        #mouse-coords {
+            bottom: 30px;
+        }
+
+        /* Control styles */
+        #sidePanel label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #sidePanel input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        #sidePanel .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        #sidePanel button {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px;
+            font-size: 15px;
+            background: #4e6350;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidePanel button:hover:not(:disabled) {
+            background: #3d4e3d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar placeholder -->
+    <div id="nav-container" role="navigation" aria-label="Primary navigation"></div>
+
+    <!-- Main content -->
+    <div id="mainContent">
+        <!-- Canvas section -->
+        <div id="canvasContainer">
+            <canvas id="newtonCanvas" width="600" height="600" aria-label="Newton's method basins visualisation"></canvas>
+            <div id="zoom-indicator" aria-live="polite" aria-atomic="true">Zoom: 1.00x</div>
+            <div id="mouse-coords" aria-live="polite" aria-atomic="true">X: 0.00, Y: 0.00</div>
+        </div>
+
+        <!-- Side panel controls -->
+        <aside id="sidePanel" role="region" aria-label="Newton's Method Controls">
+            <h2>Newton's Method Controls</h2>
+
+            <label for="newtonResolution">Resolution (px):</label>
+            <input type="number" id="newtonResolution" value="600" min="100" max="2400" step="10" />
+
+            <div class="row">
+                <div>
+                    <label for="kReal">k (Real Part):</label>
+                    <input type="number" id="kReal" value="-0.5" step="0.01" />
+                </div>
+                <div>
+                    <label for="kImag">k (Imag Part):</label>
+                    <input type="number" id="kImag" value="0.5" step="0.01" />
+                </div>
+            </div>
+
+            <label for="newtonIterations">Max Iterations:</label>
+            <input type="number" id="newtonIterations" value="50" min="5" />
+
+            <!-- Range for X and Y -->
+            <h3 style="margin-top:18px;">View Range</h3>
+            <div class="row">
+                <div>
+                    <label for="xMin">xMin</label>
+                    <input type="number" id="xMin" value="-2" step="0.01" />
+                </div>
+                <div>
+                    <label for="xMax">xMax</label>
+                    <input type="number" id="xMax" value="2" step="0.01" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <label for="yMin">yMin</label>
+                    <input type="number" id="yMin" value="-2" step="0.01" />
+                </div>
+                <div>
+                    <label for="yMax">yMax</label>
+                    <input type="number" id="yMax" value="2" step="0.01" />
+                </div>
+            </div>
+
+            <button id="applyRangeNewton">Apply Range</button>
+            <!-- Buttons -->
+            <button id="drawNewton">Draw</button>
+            <button id="clearNewton">Clear</button>
+            <button id="exportNewton">Export Image</button>
+            <button id="resetViewNewton">Reset View</button>
+            <button id="toggleGridNewton">Toggle Grid</button>
+            <button id="toggleAnimationNewton">Play/Pause Animation</button>
+            <button id="startRecordingNewton">Start Recording</button>
+            <button id="stopRecordingNewton">Stop Recording</button>
+        </aside>
+     </div>
+
+    <!-- Footer placeholder -->
+    <div id="footer-container" role="contentinfo"></div>
+
+    <script>
+        async function loadComponent(id, url) {
+            const container = document.getElementById(id);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
+                const html = await response.text();
+                container.innerHTML = html;
+                if (id === "nav-container") initNavToggle();
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = container.innerHTML = `<p style="color:red;">Could not load content.</p>`;
+            }
+        }
+
+        function initNavToggle() {
+            const menuToggle = document.getElementById("menuToggle");
+            const navLinks = document.getElementById("navLinks");
+            const menuIcon = document.getElementById("menuIcon");
+
+            if (!menuToggle || !navLinks || !menuIcon) return;
+
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuToggle.setAttribute("aria-controls", "navLinks");
+
+            menuToggle.addEventListener("click", () => {
+                const isVisible = navLinks.classList.toggle("visible");
+                menuIcon.innerHTML = isVisible ? "&times;" : "&#9776;";
+                menuToggle.setAttribute("aria-expanded", isVisible.toString());
+            });
+
+            document.addEventListener("click", (event) => {
+                const nav = document.querySelector(".nav");
+                if (nav && !nav.contains(event.target)) {
+                    navLinks.classList.remove("visible");
+                    menuIcon.innerHTML = "&#9776;";
+                    menuToggle.setAttribute("aria-expanded", "false");
+                    menuToggle.focus();
+                }
+            });
+        }
+
+        loadComponent('nav-container', 'components/nav.html');
+        loadComponent('footer-container', 'components/footer.html');
+    </script>
+
+    <script src="js/newtonMethod.js"></script>
+
+    <script>
+        (function attachRangeGlue() {
+            const xMin = document.getElementById('xMin');
+            const xMax = document.getElementById('xMax');
+            const yMin = document.getElementById('yMin');
+            const yMax = document.getElementById('yMax');
+            const apply = document.getElementById('applyRangeNewton');
+
+            if (!apply) return;
+            apply.addEventListener('click', () => {
+                if (typeof nView === 'undefined') return;
+                
+                const nxmin = parseFloat(xMin.value), nxmax = parseFloat(xMax.value);
+                const nymin = parseFloat(yMin.value), nymax = parseFloat(yMax.value);
+                if (!(isFinite(nxmin) && isFinite(nxmax) && isFinite(nymin) && isFinite(nymax))) return;
+                if (nxmax <= nxmin || nymax <= nymin) return;
+                nView.xMin = nxmin; nView.xMax = nxmax; nView.yMin = nymin; nView.yMax = nymax;
+                nView.zoomLevel = 1;                // Resetting indicator
+                
+                if (typeof nUpdateZoomIndicator === 'function') nUpdateZoomIndicator();
+                if (typeof drawNewton === 'function') drawNewton();
+            });
+        })();
+    </script>
+</body>
+</html>
